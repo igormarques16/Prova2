@@ -1,7 +1,6 @@
-// screens/ClientesScreen.js
 import React, { useEffect, useState } from 'react';
 import { View, StyleSheet, FlatList, Alert } from 'react-native';
-import { Appbar, FAB, List, Portal, Dialog, Button, TextInput } from 'react-native-paper';
+import { Appbar, FAB, List, Portal, Dialog, Button, TextInput, IconButton } from 'react-native-paper';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import BackgroundWrapper from '../components/BackgroundWrapper';
 
@@ -9,7 +8,7 @@ export default function ClientesScreen() {
   const [clientes, setClientes] = useState([]);
   const [visible, setVisible] = useState(false);
   const [editingIndex, setEditingIndex] = useState(null);
-  const [form, setForm] = useState({ nome: '', cpf: '', telefone: '', email: '', endereco: '' });
+  const [form, setForm] = useState({ nome: '', telefone: '', email: '', endereco: '' });
 
   useEffect(() => {
     loadClientes();
@@ -26,7 +25,8 @@ export default function ClientesScreen() {
   };
 
   const handleSave = () => {
-    if (!form.nome || !form.cpf || !form.telefone || !form.email || !form.endereco) {
+    const { nome, telefone, email, endereco } = form;
+    if (!nome || !telefone || !email || !endereco) {
       Alert.alert('Erro', 'Preencha todos os campos.');
       return;
     }
@@ -37,7 +37,7 @@ export default function ClientesScreen() {
       updated.push(form);
     }
     saveClientes(updated);
-    setForm({ nome: '', cpf: '', telefone: '', email: '', endereco: '' });
+    setForm({ nome: '', telefone: '', email: '', endereco: '' });
     setEditingIndex(null);
     setVisible(false);
   };
@@ -60,10 +60,21 @@ export default function ClientesScreen() {
     ]);
   };
 
+  const resetClientes = () => {
+    const novos = [
+      { nome: 'João Silva', telefone: '11988887777', email: 'joao@gmail.com', endereco: 'Rua A, 123' },
+      { nome: 'Maria Souza', telefone: '11999996666', email: 'maria@gmail.com', endereco: 'Rua B, 456' },
+      { nome: 'Carlos Lima', telefone: '11888885555', email: 'carlos@gmail.com', endereco: 'Rua C, 789' },
+      { nome: 'Ana Paula', telefone: '11777774444', email: 'ana@gmail.com', endereco: 'Rua D, 101' },
+      { nome: 'Fernanda Dias', telefone: '11666663333', email: 'fernanda@gmail.com', endereco: 'Rua E, 202' },
+    ];
+    saveClientes(novos);
+  };
+
   return (
     <BackgroundWrapper>
       <Appbar.Header>
-        <Appbar.Content title="Clientes" />
+        <Appbar.Content title="Clientes" titleStyle={{ color: 'white' }} />
       </Appbar.Header>
 
       <FlatList
@@ -72,32 +83,49 @@ export default function ClientesScreen() {
         renderItem={({ item, index }) => (
           <List.Item
             title={item.nome}
-            description={`CPF: ${item.cpf}\nTel: ${item.telefone}`}
-            left={() => <List.Icon icon="account" />}
+            titleStyle={{ color: 'white' }}
+            description={`Telefone: ${item.telefone}\nEmail: ${item.email}\nEndereço: ${item.endereco}`}
+            descriptionStyle={{ color: 'white' }}
+            left={() => <List.Icon icon="account" color="white" />}
             onPress={() => handleEdit(index)}
             right={() => (
-              <List.Icon icon="delete" onPress={() => handleDelete(index)} />
+              <IconButton
+                icon="delete"
+                onPress={() => handleDelete(index)}
+                iconColor="white"
+              />
             )}
           />
         )}
       />
 
-      <FAB
-        icon="plus"
-        label="Novo Cliente"
-        style={styles.fab}
-        onPress={() => { setVisible(true); setForm({ nome: '', cpf: '', telefone: '', email: '', endereco: '' }); setEditingIndex(null); }}
-      />
+      <View style={styles.fabContainer}>
+        <FAB
+          icon="plus"
+          label="Novo Cliente"
+          style={styles.fab}
+          onPress={() => {
+            setVisible(true);
+            setForm({ nome: '', telefone: '', email: '', endereco: '' });
+            setEditingIndex(null);
+          }}
+        />
+        <FAB
+          icon="refresh"
+          label="Resetar"
+          style={styles.fab}
+          onPress={resetClientes}
+        />
+      </View>
 
       <Portal>
         <Dialog visible={visible} onDismiss={() => setVisible(false)}>
           <Dialog.Title>{editingIndex !== null ? 'Editar Cliente' : 'Novo Cliente'}</Dialog.Title>
           <Dialog.Content>
-            <TextInput label="Nome" value={form.nome} onChangeText={(nome) => setForm({ ...form, nome })} />
-            <TextInput label="CPF" value={form.cpf} onChangeText={(cpf) => setForm({ ...form, cpf })} keyboardType="numeric" />
-            <TextInput label="Telefone" value={form.telefone} onChangeText={(telefone) => setForm({ ...form, telefone })} keyboardType="phone-pad" />
-            <TextInput label="Email" value={form.email} onChangeText={(email) => setForm({ ...form, email })} keyboardType="email-address" />
-            <TextInput label="Endereço" value={form.endereco} onChangeText={(endereco) => setForm({ ...form, endereco })} />
+            <TextInput label="Nome" value={form.nome} onChangeText={(nome) => setForm({ ...form, nome })} style={styles.input} />
+            <TextInput label="Telefone" value={form.telefone} onChangeText={(telefone) => setForm({ ...form, telefone })} style={styles.input} />
+            <TextInput label="Email" value={form.email} onChangeText={(email) => setForm({ ...form, email })} style={styles.input} />
+            <TextInput label="Endereço" value={form.endereco} onChangeText={(endereco) => setForm({ ...form, endereco })} style={styles.input} />
           </Dialog.Content>
           <Dialog.Actions>
             <Button onPress={() => setVisible(false)}>Cancelar</Button>
@@ -110,10 +138,19 @@ export default function ClientesScreen() {
 }
 
 const styles = StyleSheet.create({
-  fab: {
+  fabContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingHorizontal: 20,
     position: 'absolute',
-    margin: 16,
-    right: 0,
-    bottom: 0,
+    bottom: 16,
+    width: '100%',
+  },
+  fab: {
+    flex: 1,
+    marginHorizontal: 4,
+  },
+  input: {
+    color: 'white',
   },
 });
