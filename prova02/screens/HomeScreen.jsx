@@ -1,6 +1,5 @@
-// screens/HomeScreen.js
 import React, { useEffect } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { StyleSheet, View, ScrollView } from 'react-native';
 import { Appbar, Text, Card } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import Animated, {
@@ -12,10 +11,9 @@ import Animated, {
 import BackgroundWrapper from '../components/BackgroundWrapper';
 
 const features = [
-  { icon: 'wrench', label: 'Controle de serviços realizados' },
+  { icon: 'wrench', label: 'Serviços Realizados' },
   { icon: 'car', label: 'Cadastro de veículos por cliente' },
-  { icon: 'calendar', label: 'Histórico e agendamentos' },
-  { icon: 'message-text', label: 'Comunicação  com o cliente' },
+  { icon: 'calendar-check', label: 'Histórico e agendamentos' },  
 ];
 
 export default function HomeScreen() {
@@ -31,41 +29,32 @@ export default function HomeScreen() {
 
   const titleStyle = useAnimatedStyle(() => ({
     opacity: titleOpacity.value,
-    transform: [
-      {
-        translateY: titleOpacity.value === 1 ? 0 : 20,
-      },
-    ],
+    transform: [{ translateY: titleOpacity.value === 1 ? 0 : 20 }],
   }));
 
   const subtitleStyle = useAnimatedStyle(() => ({
     opacity: subtitleOpacity.value,
-    transform: [
-      {
-        translateY: subtitleOpacity.value === 1 ? 0 : 20,
-      },
-    ],
+    transform: [{ translateY: subtitleOpacity.value === 1 ? 0 : 20 }],
   }));
 
   const featuresStyle = useAnimatedStyle(() => ({
     opacity: featuresOpacity.value,
-    transform: [
-      {
-        translateY: featuresOpacity.value === 1 ? 0 : 20,
-      },
-    ],
+    transform: [{ translateY: featuresOpacity.value === 1 ? 0 : 20 }],
   }));
 
   return (
-    <BackgroundWrapper>
-      <Appbar.Header>
-        <Appbar.Content title="Início" titleStyle={{ color: 'white' }} />
+    <BackgroundWrapper style={styles.background}>
+      <Appbar.Header elevated style={styles.appbar}>
+        <Appbar.Content
+          title="Oficina Do Igão"
+          titleStyle={styles.appbarTitle}
+        />
       </Appbar.Header>
 
-      <View style={styles.container}>
+      <ScrollView contentContainerStyle={styles.container} showsVerticalScrollIndicator={false}>
         <Animated.View style={titleStyle}>
           <Text variant="headlineMedium" style={styles.title}>
-            Bem-vindo à Oficina Do Igão
+            Bem-vindo à Oficina
           </Text>
         </Animated.View>
 
@@ -77,53 +66,72 @@ export default function HomeScreen() {
 
         <Animated.View style={[styles.featuresContainer, featuresStyle]}>
           {features.map(({ icon, label }) => (
-            <Card key={icon} style={styles.card}>
+            <Card key={icon} style={styles.card} elevation={5}>
               <Card.Content style={styles.cardContent}>
-                <MaterialCommunityIcons name={icon} size={36} color="#B00020" />
+                <MaterialCommunityIcons name={icon} size={38} color="#800000" />
                 <Text style={styles.featureText}>{label}</Text>
               </Card.Content>
             </Card>
           ))}
         </Animated.View>
-      </View>
+      </ScrollView>
     </BackgroundWrapper>
   );
 }
 
 const styles = StyleSheet.create({
+  background: {
+    backgroundColor: '#C0C0C0',
+  },
+  appbar: {
+    backgroundColor: '#1B1B1B',
+    elevation: 6,
+  },
+  appbarTitle: {
+    color: '#C0C0C0',
+    fontWeight: '700',
+  },
   container: {
-    flex: 1,
-    justifyContent: 'flex-start', // título mais pra cima
+    paddingHorizontal: 24,
+    paddingTop: 36,
+    paddingBottom: 40,
     alignItems: 'center',
-    paddingHorizontal: 30,
-    paddingTop: 40, // espaço do topo maior para o título
   },
   title: {
     textAlign: 'center',
-    marginBottom: 20,
-    fontWeight: '700',
-    color: 'white',
+    marginBottom: 16,
+    fontWeight: '900',
+    color: '#C0C0C0', 
+    letterSpacing: 1,
   },
   subtitle: {
     textAlign: 'center',
-    marginBottom: 40,
-    color: 'white',
+    marginBottom: 32,
+    color: '#CCCCCC',
+    fontStyle: 'italic',
   },
   featuresContainer: {
     width: '100%',
   },
   card: {
     marginBottom: 20,
-    backgroundColor: 'rgba(255,255,255,0.15)', // branco translúcido
-    borderRadius: 12,
+    backgroundColor: '#222222',
+    borderRadius: 16,
+    shadowColor: '#A9A9A',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.6,
+    shadowRadius: 8,
+    borderWidth: 1,
+    borderColor: '#A9A9A9',
   },
   cardContent: {
     flexDirection: 'row',
     alignItems: 'center',
   },
   featureText: {
-    marginLeft: 16,
-    fontSize: 18,
+    marginLeft: 20,
+    fontSize: 20,
     color: 'white',
+    fontWeight: '600',
   },
 });

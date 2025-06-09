@@ -1,3 +1,4 @@
+// components/BackgroundWrapper.js
 import React from 'react';
 import { ImageBackground, StyleSheet, View } from 'react-native';
 import { Images } from './Images';
@@ -22,9 +23,7 @@ const styles = StyleSheet.create({
   },
   overlay: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.4)' // ideal para contraste com texto branco
-,
-
+    backgroundColor: 'rgba(0,0,0,0.4)', // melhora o contraste do conteúdo
     padding: 10,
   },
 });
