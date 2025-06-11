@@ -18,7 +18,7 @@ export default function ClienteDetalhesScreen({ route, navigation }) {
         <Text variant="titleLarge">{cliente.nome}</Text>
         <Text>CPF: {cliente.cpf}</Text>
         <Text>Telefone: {cliente.telefone}</Text>
-        {/* Adicione mais dados conforme quiser */}
+        
       </View>
     </BackgroundWrapper>
   );

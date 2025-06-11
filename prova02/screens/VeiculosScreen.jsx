@@ -1,20 +1,25 @@
 import React, { useEffect, useState } from 'react';
 import { View, StyleSheet, FlatList, Alert } from 'react-native';
-import { Appbar, FAB, List, Portal, Dialog, Button, TextInput, IconButton } from 'react-native-paper';
+import { Appbar, FAB, List, Portal, Dialog, Button, TextInput, IconButton, Card } from 'react-native-paper';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import axios from 'axios';
 import BackgroundWrapper from '../components/BackgroundWrapper';
 
 export default function VeiculosScreen() {
+  // Estado para lista de veículos
   const [veiculos, setVeiculos] = useState([]);
+  // Estado para controle de diálogo visível
   const [visible, setVisible] = useState(false);
+  // Estado para armazenar índice do veículo sendo editado, null se novo
   const [editingIndex, setEditingIndex] = useState(null);
+  // Estado para dados do formulário (modelo, marca, placa, ano, cor)
   const [form, setForm] = useState({ modelo: '', marca: '', placa: '', ano: '', cor: '' });
 
+  // Carrega veículos do AsyncStorage ao montar o componente
   useEffect(() => {
     loadVeiculos();
   }, []);
 
+  // Função para carregar dados salvos
   const loadVeiculos = async () => {
     const data = await AsyncStorage.getItem('veiculos');
     if (data) {
@@ -22,20 +27,25 @@ export default function VeiculosScreen() {
     }
   };
 
+  // Salva dados atualizados no AsyncStorage e no estado
   const saveVeiculos = async (data) => {
     await AsyncStorage.setItem('veiculos', JSON.stringify(data));
     setVeiculos(data);
   };
 
+  // Valida e salva um veículo novo ou editado
   const handleSave = () => {
+    // Validação simples para todos os campos
     if (!form.modelo || !form.marca || !form.placa || !form.ano || !form.cor) {
       Alert.alert('Erro', 'Preencha todos os campos.');
       return;
     }
     const updated = [...veiculos];
     if (editingIndex !== null) {
+      // Edita veículo existente
       updated[editingIndex] = form;
     } else {
+      // Adiciona novo veículo
       updated.push(form);
     }
     saveVeiculos(updated);
@@ -44,12 +54,14 @@ export default function VeiculosScreen() {
     setVisible(false);
   };
 
+  // Abre diálogo para edição com dados preenchidos
   const handleEdit = (index) => {
     setForm(veiculos[index]);
     setEditingIndex(index);
     setVisible(true);
   };
 
+  // Confirmação para deletar veículo da lista
   const handleDelete = (index) => {
     Alert.alert('Excluir Veículo', 'Deseja realmente excluir este veículo?', [
       { text: 'Cancelar' },
@@ -63,49 +75,65 @@ export default function VeiculosScreen() {
     ]);
   };
 
+  // Reseta lista com veículos de exemplo pré-definidos
   const resetVeiculos = async () => {
-    try {
-      const response = await axios.get('https://my.api.mockaroo.com/carros.json?key=9a2eac10');
-      const primeiros5 = response.data.slice(0, 5);
-      await saveVeiculos(primeiros5);
-    } catch (error) {
-      Alert.alert('Erro ao carregar dados da API', error.message);
-    }
+    const exemplos = [
+      { modelo: 'Onix', marca: 'Chevrolet', placa: 'ABC1D23', ano: '2022', cor: 'Preto' },
+      { modelo: 'HB20', marca: 'Hyundai', placa: 'XYZ4F56', ano: '2021', cor: 'Branco' },
+      { modelo: 'Gol', marca: 'Volkswagen', placa: 'QWE7T89', ano: '2020', cor: 'Prata' },
+      { modelo: 'Corolla', marca: 'Toyota', placa: 'RTY3G12', ano: '2023', cor: 'Cinza' },
+      { modelo: 'Argo', marca: 'Fiat', placa: 'UIO9J76', ano: '2022', cor: 'Vermelho' },
+    ];
+    await saveVeiculos(exemplos);
   };
 
   return (
     <BackgroundWrapper>
+      {/* Cabeçalho com título */}
       <Appbar.Header>
-        <Appbar.Content title="Veículos" titleStyle={{ color: 'white' }} />
+        <Appbar.Content 
+          title="Veículos" 
+          titleStyle={{
+            color: '#222',        
+            fontWeight: '700',     
+            fontSize: 22,         
+            letterSpacing: 0.5,  
+            fontFamily: 'System',  
+            textShadowColor: 'rgba(0,0,0,0.1)', 
+            textShadowOffset: { width: 1, height: 1 },
+            textShadowRadius: 2,
+          }} 
+        />
       </Appbar.Header>
 
+      {/* Lista de veículos usando FlatList */}
       <FlatList
         data={veiculos}
         keyExtractor={(_, index) => index.toString()}
         renderItem={({ item, index }) => (
-          <List.Item
-            title={`${item.modelo} - ${item.placa}`}
-            titleStyle={{ color: 'white' }}
-            description={`Marca: ${item.marca}, Ano: ${item.ano}, Cor: ${item.cor}`}
-            descriptionStyle={{ color: 'white' }}
-            left={() => <List.Icon icon="car" color="white" />}
-            onPress={() => handleEdit(index)}
-            right={() => (
-              <IconButton
-                icon="delete"
-                onPress={() => handleDelete(index)}
-                iconColor="white"
-              />
-            )}
-          />
+          <Card style={styles.card} onPress={() => handleEdit(index)}>
+            <Card.Title
+              title={`${item.modelo} - ${item.placa}`}
+              subtitle={`Marca: ${item.marca} | Ano: ${item.ano} | Cor: ${item.cor}`}
+              titleStyle={{ color: 'white' }}
+              subtitleStyle={{ color: 'white' }}
+              left={() => <List.Icon icon="car" color="white" />}
+              right={() => (
+                <IconButton icon="delete" onPress={() => handleDelete(index)} iconColor="white" />
+              )}
+            />
+          </Card>
         )}
+        contentContainerStyle={{ paddingBottom: 100 }}
       />
 
+      {/* Botões flutuantes para adicionar novo veículo ou resetar */}
       <View style={styles.fabContainer}>
         <FAB
           icon="plus"
           label="Novo Veículo"
-          style={styles.fab}
+          style={[styles.fab, { backgroundColor: '#D32F2F' }]} 
+          color="#fff" 
           onPress={() => {
             setVisible(true);
             setForm({ modelo: '', marca: '', placa: '', ano: '', cor: '' });
@@ -115,11 +143,13 @@ export default function VeiculosScreen() {
         <FAB
           icon="refresh"
           label="Resetar"
-          style={styles.fab}
+          style={[styles.fab, { backgroundColor: '#B71C1C' }]} 
+          color="#fff" 
           onPress={resetVeiculos}
         />
       </View>
 
+      {/* Dialog para adicionar/editar veículo */}
       <Portal>
         <Dialog visible={visible} onDismiss={() => setVisible(false)}>
           <Dialog.Title>{editingIndex !== null ? 'Editar Veículo' : 'Novo Veículo'}</Dialog.Title>
@@ -140,17 +170,29 @@ export default function VeiculosScreen() {
   );
 }
 
+// Estilos usados no componente
 const styles = StyleSheet.create({
+  card: {
+    marginBottom: 10,
+    borderRadius: 12,
+    backgroundColor: '#292929',  
+    borderWidth: 0,
+    elevation: 4,
+  },
   fabContainer: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    margin: 16,
+    justifyContent: 'space-around',
+    position: 'absolute',
+    bottom: 20,
+    left: 0,
+    right: 0,
+    paddingHorizontal: 16,
   },
   fab: {
     flex: 1,
-    marginHorizontal: 5,
+    marginHorizontal: 8,
   },
   input: {
-    color: 'white',
+    marginBottom: 10,
   },
 });

@@ -1,154 +1,83 @@
-// screens/ServicosScreen.js
-import React, { useEffect, useState } from 'react';
-import { View, StyleSheet, FlatList, Alert } from 'react-native';
-import { Appbar, FAB, List, Portal, Dialog, Button, TextInput, IconButton } from 'react-native-paper';
-import BackgroundWrapper from '../components/BackgroundWrapper';
-
 export default function ServicosScreen() {
+  // Estado para armazenar lista de serviços
   const [servicos, setServicos] = useState([]);
+  // Estado para controlar visibilidade do diálogo de formulário
   const [visible, setVisible] = useState(false);
+  // Estado para armazenar índice do serviço que está sendo editado (null = novo)
   const [editingIndex, setEditingIndex] = useState(null);
-  const [form, setForm] = useState({ tipo: '', descricao: '', valor: '', veiculo: '', data: '' });
+  // Estado para armazenar os dados do formulário de serviço
+  const [form, setForm] = useState({ nome: '', preco: '', duracao: '' });
 
   useEffect(() => {
-    carregarServicosFixos();
+    loadServicos(); // Carrega serviços do AsyncStorage ao montar a tela
   }, []);
 
-  const carregarServicosFixos = () => {
-    const servicosFixos = [
-      { tipo: 'Troca de óleo', descricao: 'Troca completa de óleo', valor: '150', veiculo: 'Gol', data: '2025-06-08' },
-      { tipo: 'Alinhamento', descricao: 'Alinhamento e balanceamento', valor: '100', veiculo: 'Civic', data: '2025-06-07' },
-      { tipo: 'Revisão', descricao: 'Revisão dos 10.000 km', valor: '350', veiculo: 'HB20', data: '2025-06-06' },
-      { tipo: 'Freio', descricao: 'Troca de pastilhas', valor: '200', veiculo: 'Uno', data: '2025-06-05' },
-      { tipo: 'Pintura', descricao: 'Retoque no para-choque', valor: '500', veiculo: 'Onix', data: '2025-06-04' },
-    ];
-    setServicos(servicosFixos);
+  // Função para carregar serviços salvos no armazenamento local
+  const loadServicos = async () => {
+    const data = await AsyncStorage.getItem('servicos');
+    if (data) setServicos(JSON.parse(data));
   };
 
+  // Salva a lista atualizada de serviços no AsyncStorage e no estado local
+  const saveServicos = async (data) => {
+    await AsyncStorage.setItem('servicos', JSON.stringify(data));
+    setServicos(data);
+  };
+
+  // Valida formulário e salva serviço (novo ou editado)
   const handleSave = () => {
-    if (!form.tipo || !form.descricao || !form.valor || !form.veiculo || !form.data) {
+    const { nome, preco, duracao } = form;
+    if (!nome || !preco || !duracao) {
       Alert.alert('Erro', 'Preencha todos os campos.');
       return;
     }
+
     const updated = [...servicos];
     if (editingIndex !== null) {
-      updated[editingIndex] = form;
+      updated[editingIndex] = form; // Atualiza serviço existente
     } else {
-      updated.push(form);
+      updated.push(form); // Adiciona novo serviço
     }
-    setServicos(updated);
-    setForm({ tipo: '', descricao: '', valor: '', veiculo: '', data: '' });
-    setEditingIndex(null);
-    setVisible(false);
+
+    saveServicos(updated); // Salva a lista atualizada
+    setForm({ nome: '', preco: '', duracao: '' }); // Limpa formulário
+    setEditingIndex(null); // Reseta índice de edição
+    setVisible(false); // Fecha diálogo
   };
 
+  // Abre diálogo para editar serviço existente
   const handleEdit = (index) => {
     setForm(servicos[index]);
     setEditingIndex(index);
     setVisible(true);
   };
 
+  // Confirma exclusão e remove serviço da lista
   const handleDelete = (index) => {
     Alert.alert('Excluir Serviço', 'Deseja realmente excluir este serviço?', [
       { text: 'Cancelar' },
       {
         text: 'Excluir', onPress: () => {
           const updated = servicos.filter((_, i) => i !== index);
-          setServicos(updated);
+          saveServicos(updated);
         }
       }
     ]);
   };
 
-  return (
-    <BackgroundWrapper>
-      <View style={styles.container}>
-        <Appbar.Header>
-          <Appbar.Content title="Serviços" titleStyle={{ color: 'white' }} />
-        </Appbar.Header>
+  // Reseta lista com serviços exemplo pré-definidos
+  const resetServicos = () => {
+    const exemplos = [
+      { nome: 'Troca de óleo', preco: '150', duracao: '30 minutos' },
+      { nome: 'Alinhamento e balanceamento', preco: '120', duracao: '40 minutos' },
+      { nome: 'Revisão completa', preco: '600', duracao: '3 horas' },
+      { nome: 'Troca de pastilhas de freio', preco: '200', duracao: '1 hora' },
+      { nome: 'Diagnóstico eletrônico', preco: '100', duracao: '20 minutos' },
+    ];
+    saveServicos(exemplos);
+  };
 
-        <FlatList
-          data={servicos}
-          keyExtractor={(_, index) => index.toString()}
-          contentContainerStyle={{ paddingBottom: 100 }}
-          renderItem={({ item, index }) => (
-            <List.Item
-              title={item.tipo}
-              titleStyle={{ color: 'white' }}
-              description={`Descrição: ${item.descricao}, Valor: R$${item.valor}`}
-              descriptionStyle={{ color: 'white' }}
-              left={() => (
-                <List.Icon
-                  icon="wrench"
-                  color="white"
-                  style={{ transform: [{ rotate: '15deg' }] }}
-                />
-              )}
-              onPress={() => handleEdit(index)}
-              right={() => (
-                <IconButton
-                  icon="delete"
-                  onPress={() => handleDelete(index)}
-                  iconColor="white"
-                />
-              )}
-            />
-          )}
-        />
-
-        <View style={styles.fabContainer}>
-          <FAB
-            icon="plus"
-            label="Novo Serviço"
-            onPress={() => {
-              setVisible(true);
-              setForm({ tipo: '', descricao: '', valor: '', veiculo: '', data: '' });
-              setEditingIndex(null);
-            }}
-            style={styles.fab}
-          />
-          <FAB
-            icon="refresh"
-            label="Resetar"
-            onPress={carregarServicosFixos}
-            style={styles.fab}
-            small
-          />
-        </View>
-
-        <Portal>
-          <Dialog visible={visible} onDismiss={() => setVisible(false)}>
-            <Dialog.Title>{editingIndex !== null ? 'Editar Serviço' : 'Novo Serviço'}</Dialog.Title>
-            <Dialog.Content>
-              <TextInput label="Tipo" value={form.tipo} onChangeText={(tipo) => setForm({ ...form, tipo })} />
-              <TextInput label="Descrição" value={form.descricao} onChangeText={(descricao) => setForm({ ...form, descricao })} />
-              <TextInput label="Valor" value={form.valor} onChangeText={(valor) => setForm({ ...form, valor })} keyboardType="numeric" />
-              <TextInput label="Veículo" value={form.veiculo} onChangeText={(veiculo) => setForm({ ...form, veiculo })} />
-              <TextInput label="Data" value={form.data} onChangeText={(data) => setForm({ ...form, data })} />
-            </Dialog.Content>
-            <Dialog.Actions>
-              <Button onPress={() => setVisible(false)}>Cancelar</Button>
-              <Button onPress={handleSave}>Salvar</Button>
-            </Dialog.Actions>
-          </Dialog>
-        </Portal>
-      </View>
-    </BackgroundWrapper>
-  );
+  // FlatList renderiza cards de serviços, cada card pode ser editado ou excluído
+  // FABs para criar novo serviço ou resetar lista
+  // Dialog para inserir ou editar dados do serviço
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  fabContainer: {
-    position: 'absolute',
-    right: 16,
-    bottom: 16,
-    flexDirection: 'row',
-    gap: 8,
-  },
-  fab: {
-    marginLeft: 8,
-  },
-});

@@ -1,9 +1,5 @@
-import React from 'react';
-import { StyleSheet, View, Dimensions } from 'react-native';
-import MapView, { Marker } from 'react-native-maps';
-import BackgroundWrapper from '../components/BackgroundWrapper';
-
 export default function MapaScreen() {
+  // Coordenadas fixas da localização da oficina
   const latitude = -15.8480882;
   const longitude = -48.0281534;
 
@@ -12,13 +8,15 @@ export default function MapaScreen() {
       <View style={styles.container}>
         <MapView
           style={styles.map}
+          // Região inicial mostrada no mapa (centralizada nas coordenadas)
           initialRegion={{
             latitude,
             longitude,
-            latitudeDelta: 0.05,
-            longitudeDelta: 0.05,
+            latitudeDelta: 0.05,  // Zoom vertical
+            longitudeDelta: 0.05, // Zoom horizontal
           }}
         >
+          {/* Marcador indicando a localização da oficina */}
           <Marker
             coordinate={{ latitude, longitude }}
             title="Oficina do Igão"
@@ -29,19 +27,3 @@ export default function MapaScreen() {
     </BackgroundWrapper>
   );
 }
-
-const { width, height } = Dimensions.get('window');
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: 20,
-  },
-  map: {
-    width: width * 0.95,  // 95% da largura da tela
-    height: height * 0.6,  // 60% da altura da tela — bem maior
-    borderRadius: 16,
-  },
-});

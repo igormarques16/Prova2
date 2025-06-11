@@ -11,7 +11,9 @@ import HomeScreen from './screens/HomeScreen';
 import ClientesScreen from './screens/ClientesScreen';
 import VeiculosScreen from './screens/VeiculosScreen';
 import ServicosScreen from './screens/ServicosScreen';
-import MapaScreen from './screens/MapaScreen'; // Aba do mapa
+import MapaScreen from './screens/MapaScreen';
+import DashboardScreen from './screens/DashboardScreen';
+
 
 const Tab = createBottomTabNavigator();
 
@@ -25,15 +27,29 @@ export default function App() {
               headerShown: false,
               tabBarIcon: ({ color, size }) => {
                 let iconName;
-                if (route.name === 'Home') iconName = 'home';
-                else if (route.name === 'Clientes') iconName = 'account-group';
-                else if (route.name === 'Veículos') iconName = 'car';
-                else if (route.name === 'Serviços') iconName = 'tools';
-                else if (route.name === 'Mapa') iconName = 'map';
 
-                return (
-                  <MaterialCommunityIcons name={iconName} size={size} color={color} />
-                );
+                switch (route.name) {
+                  case 'Home':
+                    iconName = 'home';
+                    break;
+                  case 'Clientes':
+                    iconName = 'account-group';
+                    break;
+                  case 'Veículos':
+                    iconName = 'car';
+                    break;
+                  case 'Serviços':
+                    iconName = 'tools';
+                    break;
+                  case 'Mapa':
+                    iconName = 'map';
+                    break;
+                  case 'Dashboard':
+                    iconName = 'view-dashboard';
+                    break;
+                }
+
+                return <MaterialCommunityIcons name={iconName} size={size} color={color} />;
               },
               tabBarActiveTintColor: '#6200ee',
               tabBarInactiveTintColor: 'gray',
@@ -44,6 +60,8 @@ export default function App() {
             <Tab.Screen name="Veículos" component={VeiculosScreen} />
             <Tab.Screen name="Serviços" component={ServicosScreen} />
             <Tab.Screen name="Mapa" component={MapaScreen} />
+            <Tab.Screen name="Dashboard" component={DashboardScreen} />
+
           </Tab.Navigator>
         </NavigationContainer>
       </PaperProvider>
